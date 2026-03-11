@@ -6,17 +6,18 @@ Require sttsogat_cat.
 Import sttsogat_cat.
 
 (* 1. stlc.v ből *)
-
 Lemma vex : forall A B : stlc.Typ, exists t, ⊢ t [:] (A ⊃ (B ⊃ A)).
-intros.
-exists (stlc.lam A (stlc.lam B (stlc.hyp 1))).
-apply STT_lam.
-apply STT_lam.
-apply STT_hypS.
-apply STT_hyp0.
+Proof.
+	intros.
+	exists (stlc.lam A (stlc.lam B (stlc.hyp 1))).
+	apply STT_lam.
+	apply STT_lam.
+	apply STT_hypS.
+	apply STT_hyp0.
 Qed.
 
 Lemma currying_1 : forall A B C: stlc.Typ, exists t, ⊢ t [:] ((A ⊃ (B ⊃ C)) ⊃ ((A ∧ B) ⊃ C)).
+Proof.
   intros.
   exists (
     stlc.lam (A ⊃ (B ⊃ C))            (* lambda f : A -> B -> C *)
@@ -38,6 +39,7 @@ Lemma currying_1 : forall A B C: stlc.Typ, exists t, ⊢ t [:] ((A ⊃ (B ⊃ C)
 Qed.
 
 Lemma currying_2 : forall A B C: stlc.Typ, exists t, ⊢ t [:] ( ((A ∧ B) ⊃ C) ⊃ (A ⊃ (B ⊃ C)) ).
+Proof.
   intros A B C.
   (* The term is: λf. λx. λy. f (pair x y) *)
   (* Indices: f=2, x=1, y=0 *)
@@ -68,8 +70,8 @@ Lemma currying_2 : forall A B C: stlc.Typ, exists t, ⊢ t [:] ( ((A ∧ B) ⊃ 
 Qed.
 
 (* 2. sttsogat_cat.v *)
-
 Lemma curry_s_1 (S : STTSOGAT) : forall A B C : Typ, (Pf A -> (Pf B -> Pf C)) -> Pf (Cnj A B) -> Pf C.
+Proof.
   intros A B C.
   intro f.
   intro Pair.
@@ -81,6 +83,7 @@ Lemma curry_s_1 (S : STTSOGAT) : forall A B C : Typ, (Pf A -> (Pf B -> Pf C)) ->
 Qed.
 
 Lemma curry_s_2 (S : STTSOGAT) : forall A B C : Typ, Pf (Imp A (Imp B C)) -> Pf (Imp (Cnj A B) C).
+Proof.
   intros A B C f.
   apply lam.
   intro.
@@ -95,8 +98,9 @@ Qed.
 
 
 (* 3.  *)
-
-  Lemma kvant_1 : forall (U : Type) (A B : U -> Prop), (forall x, A x /\ B x) <-> (forall x, A x) /\ (forall x, B x). 
+Lemma kvant_1 : forall (U : Type) (A B : U -> Prop),
+	(forall x, A x /\ B x) <-> (forall x, A x) /\ (forall x, B x).
+Proof.
   intros U A B.
   split.
   - all: intro H.
@@ -110,11 +114,16 @@ Qed.
     apply H0.
 Qed.
 
-Lemma kvant_2 : forall (U : Type) (A B : U -> Prop), ((exists x, A x) \/ ~(exists x, A x)) ->  ((exists x, A x) -> ((exists x, B x))) -> (forall x, A x ->  (exists x, B x)).
-  intros U A B [|].
-  all: intros H0 H1 H2.
+
+Lemma kvant_2 : forall (U : Type) (A B : U -> Prop),
+  ((exists x, A x) \/ ~(exists x, A x)) -> 
+  ((exists x, A x) -> ((exists x, B x))) ->
+  (forall x, A x -> (exists x, B x)).
+Proof.
+  intros U A B [|]; intros H0 H1 H2.
   all: apply H0.
-  - assumption.
-  - unfold not in *.
+  all: exists H1.
+  all: exact H2.
 Qed.
+
 
